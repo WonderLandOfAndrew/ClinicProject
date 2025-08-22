@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Billing — Clinic Patient Management</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../js/essentials_userloader.js" defer></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+  <div id="site-header"></div>
+
+  <main class="p-6 max-w-7xl mx-auto">
+    <!-- Title + search + New Invoice -->
+    <div class="mb-6 grid items-center gap-3 grid-cols-1 lg:grid-cols-[1fr_auto]">
+      <h2 class="text-2xl font-semibold tracking-tight">Billing &amp; Invoices</h2>
+
+      <div class="flex items-center gap-3">
+        <!-- search -->
+        <div class="relative w-full max-w-sm">
+          <input id="invoiceSearch" type="search" placeholder="Search invoices…"
+                 class="h-10 w-full rounded-lg bg-gray-900/60 border border-gray-700 pl-10 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 1 1 1.414-1.414l3.387 3.387a1 1 0 0 1-1.414 1.414l-3.387-3.387ZM14 8a6 6 0 1 0-12 0 6 6 0 0 0 12 0Z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+
+        <!-- New Invoice -->
+        <a href="#" id="newInvoiceBtn"
+           class="h-10 inline-flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 text-sm font-medium">
+          New Invoice
+        </a>
+      </div>
+    </div>
+
+    <section class="rounded-xl bg-gray-800/70 p-5 ring-1 ring-black/5">
+      <div class="overflow-x-auto">
+        <table aria-label="Invoices" class="min-w-full text-left text-sm">
+          <thead class="bg-gray-700/60 text-gray-200">
+            <tr>
+              <th class="py-2 px-3">Invoice</th>
+              <th class="py-2 px-3">Patient</th>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Amount</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesTbody">
+            <!-- Filled by doctor.js -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/sessionManager.js" defer></script>
+  <script src="../js/doctor.js" defer></script>
+  <!-- doctor.js already loaded on your pages per your setup -->
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Appointments — Web application for patient management of a medical clinic</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="../js/essentials_userloader.js" defer></script>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+  <div id="site-header"></div>
+
+  <main class="p-6 max-w-7xl mx-auto">
+    <!-- Heading row: title, tabs, search, New Appointment -->
+    <div class="mb-6 grid items-center gap-3 grid-cols-1 xl:grid-cols-[1fr_auto]">
+      <div class="flex items-center gap-4">
+        <h2 class="text-2xl font-semibold tracking-tight grow">Appointments</h2>
+
+        <!-- Tabs (keep class names for JS if you use them) -->
+        <div class="tabs hidden md:inline-flex rounded-lg bg-gray-800/60 p-1" role="tablist" aria-label="Time range">
+          <a href="#" role="tab" aria-selected="true"
+             class="active px-3 py-1.5 text-sm rounded-md bg-gray-900/60">All</a>
+          <a href="#" role="tab" aria-selected="false"
+             class="px-3 py-1.5 text-sm rounded-md hover:bg-gray-900/40">Today</a>
+          <a href="#" role="tab" aria-selected="false"
+             class="px-3 py-1.5 text-sm rounded-md hover:bg-gray-900/40">This Week</a>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Search bar -->
+        <div class="relative w-full max-w-md">
+          <input id="search" type="search" placeholder="Search patient, doctor, service…"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500" />
+          <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12.9 14.32a8 8 0 1 1 1.414-1.414l3.387 3.387a1 1 0 0 1-1.414 1.414l-3.387-3.387ZM14 8a6 6 0 1 0-12 0 6 6 0 0 0 12 0Z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+
+        <!-- New Appointment -->
+        <label for="newApptModal"
+              class="h-10 inline-flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 text-sm font-medium cursor-pointer">
+          New Appointment
+        </label>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <form class="form mb-6 rounded-xl bg-gray-800/70 p-5 ring-1 ring-black/5" aria-label="Filters" role="region">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="field">
+          <label for="from" class="block text-sm text-gray-300 mb-1">From</label>
+          <input id="from" type="date"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <div class="field">
+          <label for="to" class="block text-sm text-gray-300 mb-1">To</label>
+          <input id="to" type="date"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+        </div>
+        <div class="field">
+          <label for="doctor" class="block text-sm text-gray-300 mb-1">Doctor</label>
+          <select id="doctor"
+                  class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Any</option>
+            <option>Dr. Popescu</option>
+            <option>Dr. Iancu</option>
+            <option>Dr. Marinescu</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="status" class="block text-sm text-gray-300 mb-1">Status</label>
+          <select id="status"
+                  class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="">Any</option>
+            <option>Pending</option>
+            <option>Confirmed</option>
+            <option>Cancelled</option>
+            <option>No-show</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-4 flex items-center gap-3">
+        <div class="grow"></div>
+        <button type="reset"
+                class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-4 py-2 text-sm">
+          Reset
+        </button>
+        <button type="submit"
+                class="btn primary inline-flex items-center rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-medium">
+          Apply
+        </button>
+      </div>
+    </form>
+
+    <!-- Bulk actions + Export -->
+    <div class="mb-4 flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <label class="chip inline-flex items-center gap-2 rounded-lg bg-gray-800/70 px-3 py-1.5 text-sm">
+          <input type="checkbox" aria-label="Select all"
+                 class="h-4 w-4 rounded border-gray-600 bg-gray-900/70" />
+          Select all
+        </label>
+        <a href="#bulk-confirm"
+           class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm">Confirm</a>
+        <a href="#bulk-cancel"
+           class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm">Cancel</a>
+        <a href="#bulk-delete"
+           class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm">Delete</a>
+      </div>
+      <div class="grow"></div>
+      <a href="#export"
+         class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm">Export CSV</a>
+    </div>
+
+    <!-- Results Table -->
+    <section class="rounded-xl bg-gray-800/70 p-5 ring-1 ring-black/5" aria-labelledby="appt-table-title">
+      <h3 id="appt-table-title" class="mb-3 text-xs uppercase tracking-wider text-gray-400">Results</h3>
+
+      <div class="overflow-x-auto">
+        <table aria-label="Appointment list" class="min-w-full text-left text-sm">
+          <thead class="bg-gray-700/60 text-gray-200">
+            <tr>
+              <th class="py-2 px-3">
+                <input type="checkbox" aria-label="Select page"
+                       class="h-4 w-4 rounded border-gray-600 bg-gray-900/70" />
+              </th>
+              <th class="py-2 px-3">ID</th>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Time</th>
+              <th class="py-2 px-3">Patient</th>
+              <th class="py-2 px-3">Doctor</th>
+              <th class="py-2 px-3">Service</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="appointmentsTbody" class="[&>tr]:border-t [&>tr]:border-gray-700/60">
+            <!-- Your JS can render rows here; the 2 examples below are placeholders -->
+            <tr>
+              <td class="py-2 px-3"><input type="checkbox" aria-label="Select A-1042"
+                      class="h-4 w-4 rounded border-gray-600 bg-gray-900/70" /></td>
+              <td class="py-2 px-3">#A-1042</td>
+              <td class="py-2 px-3">2025-08-09</td>
+              <td class="py-2 px-3">11:30</td>
+              <td class="py-2 px-3">Mircea Ene</td>
+              <td class="py-2 px-3">Dr. Popescu</td>
+              <td class="py-2 px-3">Dental</td>
+              <td class="py-2 px-3">
+                <span class="pill inline-flex items-center rounded-full bg-emerald-500/15 text-emerald-300 text-xs px-2 py-0.5">Confirmed</span>
+              </td>
+              <td class="py-2 px-3 text-right">
+                <a class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm"
+                   href="#edit-appointment">Edit</a>
+                <a class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm ml-2"
+                   href="#cancel-appointment">Cancel</a>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="py-2 px-3"><input type="checkbox" aria-label="Select A-1043"
+                      class="h-4 w-4 rounded border-gray-600 bg-gray-900/70" /></td>
+              <td class="py-2 px-3">#A-1043</td>
+              <td class="py-2 px-3">2025-08-10</td>
+              <td class="py-2 px-3">10:00</td>
+              <td class="py-2 px-3">Andreea M.</td>
+              <td class="py-2 px-3">Dr. Iancu</td>
+              <td class="py-2 px-3">ENT</td>
+              <td class="py-2 px-3">
+                <span class="pill warn inline-flex items-center rounded-full bg-amber-500/15 text-amber-300 text-xs px-2 py-0.5">Pending</span>
+              </td>
+              <td class="py-2 px-3 text-right">
+                <a class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm"
+                   href="#edit-appointment">Edit</a>
+                <a class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm ml-2"
+                   href="#cancel-appointment">Cancel</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="mt-4 flex items-center gap-3">
+        <span class="muted text-sm text-gray-400">Page 1 of 12</span>
+        <div class="grow"></div>
+        <a class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm" href="#">Prev</a>
+        <a class="btn inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm" href="#">Next</a>
+      </div>
+    </section>
+
+    <!-- Legend -->
+    <div class="mt-6 flex items-center gap-2 text-sm">
+      <span class="muted text-gray-400">Legend:</span>
+      <span class="pill inline-flex items-center rounded-full bg-emerald-500/15 text-emerald-300 px-2 py-0.5 text-xs ml-2">Confirmed</span>
+      <span class="pill warn inline-flex items-center rounded-full bg-amber-500/15 text-amber-300 px-2 py-0.5 text-xs ml-2">Pending</span>
+      <span class="pill danger inline-flex items-center rounded-full bg-rose-500/15 text-rose-300 px-2 py-0.5 text-xs ml-2">Cancelled</span>
+    </div>
+  </main>
+
+  <!-- ===== No-JS Modal for New Appointment ===== -->
+  <!-- Hidden checkbox controls visibility -->
+  <input id="newApptModal" type="checkbox" class="hidden peer" />
+  <!-- Overlay -->
+  <label for="newApptModal"
+         class="peer-checked:opacity-100 peer-checked:pointer-events-auto opacity-0 pointer-events-none fixed inset-0 bg-black/60 transition-opacity"></label>
+
+  <!-- Modal box -->
+  <div class="peer-checked:opacity-100 peer-checked:pointer-events-auto opacity-0 pointer-events-none fixed inset-0 grid place-items-center p-4">
+    <div class="w-full max-w-2xl rounded-xl bg-gray-800 p-6 shadow-xl ring-1 ring-black/50">
+      <div class="flex items-center gap-3 mb-4">
+        <h3 class="text-lg font-semibold grow">New Appointment</h3>
+        <label for="newApptModal"
+               class="inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-3 py-1.5 text-sm cursor-pointer">Close</label>
+      </div>
+
+      <form id="newApptForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Patient</label>
+          <input name="patient" placeholder="Start typing name…"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500" required/>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Doctor</label>
+          <input name="doctor" placeholder="Assign doctor…"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500" required/>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Date</label>
+          <input type="date" name="date"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500" required/>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Time</label>
+          <input type="time" name="time"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500" required/>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Service</label>
+          <input name="service" placeholder="Consultation, follow-up…"
+                 class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"/>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-300 mb-1">Status</label>
+          <select name="status"
+                  class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <option>Pending</option>
+            <option>Confirmed</option>
+            <option>Cancelled</option>
+          </select>
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm text-gray-300 mb-1">Notes</label>
+          <textarea name="notes" rows="3" placeholder="Optional notes"
+                    class="w-full rounded-lg bg-gray-900/60 border border-gray-700 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500"></textarea>
+        </div>
+
+        <div class="sm:col-span-2 mt-2 flex items-center gap-3">
+          <div class="grow"></div>
+          <label for="newApptModal"
+                 class="inline-flex items-center rounded-lg bg-gray-700/70 hover:bg-gray-700 px-4 py-2 text-sm cursor-pointer">Discard</label>
+          <button type="submit"
+                  class="inline-flex items-center rounded-lg bg-indigo-600 hover:bg-indigo-500 px-4 py-2 text-sm font-medium">
+            Create
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/sessionManager.js" defer></script>
+</body>
+</html>

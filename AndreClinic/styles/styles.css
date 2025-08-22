@@ -1,0 +1,55 @@
+:root {
+  --bg: #0f172a;
+  --card: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #22c55e;
+  --accent-ink: #052e16;
+  --border: #1f2937;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1200px 600px at 50% -10%, #1f2937 0, var(--bg) 50%);
+  color: var(--text);
+}
+.container { max-width: 980px; margin: 0 auto; padding: 24px; }
+.center { display: grid; place-items: center; min-height: 100vh; }
+.card {
+  width: 100%; max-width: 640px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; padding: 14px 20px;
+  background: rgba(17,24,39,.7); backdrop-filter: blur(6px); border-bottom: 1px solid var(--border);
+}
+.brand { font-weight: 700; }
+.lead { font-size: 1.1rem; opacity: .9; margin: 12px 0 20px; }
+.muted { color: var(--muted); }
+.form label { display: grid; gap: 8px; margin: 10px 0; font-size: .95rem; }
+input {
+  appearance: none; background: #0b1220; color: var(--text); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px; outline: none;
+}
+input:focus { border-color: #334155; box-shadow: 0 0 0 3px rgba(51,65,85,.35); }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink); border: none; padding: 12px 16px;
+  border-radius: 12px; font-weight: 700; transition: transform .04s ease;
+}
+.btn:active { transform: translateY(1px); }
+.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.error { color: #fca5a5; min-height: 20px; margin-top: 8px; }
+.table-wrap { overflow-x: auto; }
+#patientsTable { width: 100%; border-collapse: collapse; margin-top: 14px; }
+#patientsTable th, #patientsTable td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+#patientsTable tr:hover { background: rgba(255,255,255,.02); }
+
+.pill {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(109, 211, 166, .2);
+}
