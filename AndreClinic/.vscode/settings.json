@@ -19,5 +19,21 @@
                 "retrievePublickey": true
             }
         }
+    ],
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MariaDB",
+            "name": "ClinicMain",
+            "database": "ClinicMain",
+            "username": "root",
+            "password": "12345678"
+        }
     ]
 }
