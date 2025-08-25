@@ -3,18 +3,50 @@ const bcrypt = require('bcrypt');
 const db = require('./db');
 const path = require('path');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = 3001;
 
-app.use(cors());
+// app.use(cors());
+
+// --- CORS allowlist for dev hosts ---
+// Use the existing env if you already added it
+// FRONTEND_ORIGIN=http://localhost:5500,http://127.0.0.1:5500
+
+const allowed = new Set(
+  (process.env.FRONTEND_ORIGIN || 'http://localhost:5500')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+);
+
+// Build per-request CORS options so Access-Control-Allow-Origin matches exactly
+const corsOptionsDelegate = function (req, cb) {
+  const origin = req.header('Origin');
+  const isAllowed = origin && allowed.has(origin);
+  cb(null, {
+    origin: isAllowed,                 // exact echo (not "*")
+    credentials: true,                 // allow cookies
+    methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+    allowedHeaders: ['Content-Type','Authorization']
+  });
+};
+
+// MUST come before routes:
+app.use(cors(corsOptionsDelegate));
+// Explicitly handle preflight (OPTIONS) globally and for login route:
+// (cors() will add the headers to OPTIONS responses)
+app.options(/.*/, cors(corsOptionsDelegate));
+app.options('/api/login', cors(corsOptionsDelegate));
+
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, '../')));
 
 app.post('/api/register', async (req, res) => {
   const { username, email, password, first_name, last_name, role } = req.body;
-
-  // const { username, email, password } = req.body;
 
   // Basic validation
   if (!username || !email || !password || !first_name || !last_name || !role) {
@@ -23,25 +55,6 @@ app.post('/api/register', async (req, res) => {
   if (!['Patient','Doctor'].includes(role)) {
     return res.status(400).json({ message: "role must be 'Patient' or 'Doctor'." });
   }
-
-  // if (!username || !email || !password) {
-  //   return res.status(400).json({ message: 'All fields are required.' });
-  // }
-  // try {
-  //   // Debug: log what db.query returns
-  //   const result = await db.query('SELECT * FROM UserAccount WHERE username = ? OR email = ?', [username, email]);
-  //   console.log('db.query result:', result);
-  //   const rows = Array.isArray(result) ? result[0] : result;
-  //   if (rows && rows.length > 0) {
-  //     return res.status(409).json({ message: 'Username or email already exists.' });
-  //   }
-  //   const hash = await bcrypt.hash(password, 10);
-  //   await db.query('INSERT INTO UserAccount (username, email, passwordhash) VALUES (?, ?, ?)', [username, email, hash]);
-  //   res.status(201).json({ message: 'Registration successful.' });
-  // } catch (err) {
-  //   console.error('Registration error:', err);
-  //   res.status(500).json({ message: 'Server error.' });
-  // }
 
   let conn;
   try {
@@ -121,15 +134,61 @@ app.post('/api/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ message: 'Invalid credentials.' });
 
+    // res.json({
+    //   message: 'Login successful.',
+    //   user: { user_id: user.user_id, username: user.username, email: user.email, role: user.role, linked_id: user.linked_id }
+    // });
+
+    // --- NEW: sign JWT and set HTTP-only cookie
+    const token = jwt.sign(
+      { user_id: user.user_id, role: user.role, linked_id: user.linked_id, username: user.username, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('access_token', token, {
+      httpOnly: true,
+      secure: false, //isProd,              // true only behind HTTPS in prod
+      sameSite: 'lax', //isProd ? 'none' : 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000       // 15 min
+    });
     res.json({
       message: 'Login successful.',
       user: { user_id: user.user_id, username: user.username, email: user.email, role: user.role, linked_id: user.linked_id }
     });
+
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error.' });
   }
 });
+
+// NEW: who am I
+app.get('/api/me', (req, res) => {
+  const token = req.cookies?.access_token;
+  if (!token) return res.json({ authenticated: false });
+  try {
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    res.json({ authenticated: true, user: payload });
+  } catch {
+    res.json({ authenticated: false });
+  }
+});
+
+// NEW: logout
+app.post('/api/logout', (req, res) => {
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+    maxAge: 0
+  });
+  res.json({ message: 'Logged out' });
+});
+
 
 // app.post('/api/login', async (req, res) => {
 //   const { email, password } = req.body;

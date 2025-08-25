@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const response = await fetch('http://localhost:3001/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password })
       });
 
